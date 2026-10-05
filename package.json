@@ -1,0 +1,18 @@
+{
+  "name": "sharedboard",
+  "version": "0.1.0",
+  "description": "A lightweight collaborative sticky-note desktop application",
+  "main": "desktop/main.js",
+  "scripts": {
+    "start": "electron .",
+    "electron": "electron .",
+    "server": "node server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

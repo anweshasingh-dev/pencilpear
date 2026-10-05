@@ -1,0 +1,509 @@
+/* SharedBoard - Nostalgic Drawing/Notebook Physical Canvas */
+:root {
+  /* Vintage Desk & Paper Palette */
+  --desk-bg: #ded6c8;
+  --paper-bg: #faf7ef;
+  --paper-edge: #c9bea9;
+  --paper-shadow: 0 1px 3px rgba(50, 40, 25, 0.08), 0 8px 24px rgba(50, 40, 25, 0.09);
+
+  /* Warm Ink Tones */
+  --ink-primary: #2c251e;
+  --ink-secondary: #6e6050;
+  --ink-quiet: #9b8c7b;
+  --ink-border: #cfc4b2;
+  --ink-border-subtle: rgba(185, 170, 150, 0.4);
+
+  /* Retro Card / Toolstrip Backgrounds */
+  --card-bg: #f4eee2;
+  --card-hover: #ffffff;
+  --card-pressed: #e6ddce;
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(55, 45, 30, 0.12);
+
+  /* Status Colors (Subdued Retro Tones) */
+  --retro-green: #3b7b3e;
+  --retro-amber: #b86e1e;
+  --retro-red: #ad3328;
+
+  /* Typography */
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Courier New", Courier, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--desk-bg);
+  font-family: var(--font-body);
+  color: var(--ink-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Physical Sheet of Paper (The Canvas)
+   ========================================================================== */
+.paper-sheet {
+  width: calc(100vw - 18px);
+  height: calc(100vh - 18px);
+  max-width: 960px;
+  background-color: var(--paper-bg);
+  /* Extremely subtle notebook dotted guideline grid */
+  background-image: radial-gradient(circle, rgba(145, 125, 95, 0.16) 0.75px, transparent 0.75px);
+  background-size: 20px 20px;
+  background-position: 10px 10px;
+
+  border: 1px solid var(--paper-edge);
+  border-radius: 2px;
+  box-shadow: var(--paper-shadow);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Top-Right Quiet Sharing / Presence Control
+   ========================================================================== */
+.collab-container {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 30;
+}
+
+/* Tiny tactile status stamp */
+.collab-trigger {
+  background: var(--card-bg);
+  border: 1px solid var(--ink-border);
+  border-radius: 3px;
+  box-shadow: var(--card-shadow);
+  padding: 3px 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--ink-secondary);
+  font-family: inherit;
+  transition: all 0.12s ease;
+}
+
+.collab-trigger:hover {
+  background-color: var(--card-hover);
+  border-color: #b5a691;
+  color: var(--ink-primary);
+}
+
+.collab-trigger:active {
+  background-color: var(--card-pressed);
+  box-shadow: inset 0 1px 2px rgba(60, 45, 30, 0.15);
+  transform: translateY(1px);
+}
+
+.collab-icon {
+  opacity: 0.6;
+}
+
+.collab-trigger:hover .collab-icon {
+  opacity: 0.9;
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  letter-spacing: 0.01em;
+}
+
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #999083;
+}
+
+.status-indicator.online .status-dot {
+  background-color: var(--retro-green);
+  box-shadow: 0 0 2px rgba(59, 123, 62, 0.6);
+}
+
+.status-indicator.connecting .status-dot {
+  background-color: var(--retro-amber);
+}
+
+.status-indicator.offline .status-dot {
+  background-color: var(--retro-red);
+}
+
+/* Popover Card (Retro Index Card Style) */
+.collab-popover {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background-color: #fdfbf7;
+  border: 1px solid #b8a994;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 12px rgba(50, 40, 25, 0.14);
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 178px;
+  z-index: 40;
+}
+
+.collab-form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.room-code-field {
+  flex: 1;
+  width: 80px;
+  background: #f5efe3;
+  border: 1px solid #c9bea9;
+  border-radius: 2px;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-primary);
+  letter-spacing: 0.08em;
+  padding: 3px 5px;
+}
+
+.room-code-field::placeholder {
+  color: var(--ink-quiet);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.room-code-field:focus {
+  border-color: #998a75;
+  background: #ffffff;
+}
+
+.paper-icon-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--ink-border);
+  border-radius: 2px;
+  box-shadow: var(--card-shadow);
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.1s ease;
+}
+
+.paper-icon-btn:hover {
+  background-color: var(--card-hover);
+  border-color: #b5a691;
+  color: var(--ink-primary);
+}
+
+.paper-icon-btn:active {
+  background-color: var(--card-pressed);
+  box-shadow: inset 0 1px 2px rgba(60, 45, 30, 0.15);
+  transform: translateY(1px);
+}
+
+.room-feedback {
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--retro-red);
+  padding: 2px 2px;
+  line-height: 1.25;
+}
+
+.room-feedback.success {
+  color: var(--retro-green);
+  font-style: normal;
+}
+
+/* ==========================================================================
+   Main Paper Workspace
+   ========================================================================== */
+.paper-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.board-surface {
+  flex: 1;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Writing Textarea */
+.paper-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 24px 28px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 20px; /* Aligned with 20px dotted guidelines */
+  color: var(--ink-primary);
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  user-select: text;
+  z-index: 1;
+}
+
+/* In Text Mode: show subtle handwritten hint */
+.paper-textarea::placeholder {
+  color: rgba(145, 125, 100, 0.65);
+  font-style: italic;
+  font-family: inherit;
+  transition: opacity 0.12s ease;
+}
+
+/* In Pencil/Eraser Mode: completely hide placeholder so canvas looks clean */
+.board-surface.drawing-active .paper-textarea::placeholder {
+  opacity: 0 !important;
+  color: transparent !important;
+}
+
+/* Drawing Canvas Layer */
+.paper-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  touch-action: none;
+  pointer-events: none;
+}
+
+/* Active Drawing / Erasing States */
+.board-surface.drawing-active .paper-canvas {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+.board-surface.drawing-active .paper-textarea {
+  pointer-events: none;
+  user-select: none;
+}
+
+.board-surface.eraser-active .paper-canvas {
+  cursor: cell;
+}
+
+/* ==========================================================================
+   Tactile Physical Toolbar Strip
+   ========================================================================== */
+.dock-container {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 20;
+}
+
+/* Stationery Drawer (Ink wells & Nib sizes) */
+.stationery-tray {
+  display: flex;
+  align-items: center;
+  background-color: var(--card-bg);
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--ink-border);
+  box-shadow: var(--card-shadow);
+  gap: 8px;
+}
+
+.tray-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tray-divider {
+  width: 1px;
+  height: 12px;
+  background-color: var(--ink-border-subtle);
+}
+
+/* Tactile Ink Drops */
+.color-palette {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ink-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background-color: var(--ink-color);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18) inset, 0 1px 1px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.ink-swatch:hover {
+  transform: scale(1.15);
+}
+
+.ink-swatch.active {
+  transform: scale(1.22);
+  box-shadow: 0 0 0 1px #fff, 0 0 0 2.5px #524434, 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Nib / Eraser Sizes */
+.size-palette {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.size-dot-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.1s ease;
+}
+
+.size-dot-btn:hover {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-color: #d1c7b7;
+}
+
+.size-dot-btn.active {
+  background-color: var(--card-pressed);
+  border-color: #b5a691;
+  box-shadow: inset 0 1px 2px rgba(60, 45, 30, 0.15);
+}
+
+.nib-dot {
+  background-color: var(--ink-primary);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.nib-dot.small {
+  width: 2px;
+  height: 2px;
+}
+
+.nib-dot.medium {
+  width: 4px;
+  height: 4px;
+}
+
+.nib-dot.large {
+  width: 7px;
+  height: 7px;
+}
+
+/* Primary Tools Dock */
+.stationery-dock {
+  display: flex;
+  align-items: center;
+  background-color: var(--card-bg);
+  border: 1px solid var(--ink-border);
+  border-radius: 3px;
+  box-shadow: var(--card-shadow);
+  padding: 2px 3px;
+  gap: 2px;
+}
+
+.stationery-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  width: 26px;
+  height: 26px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.1s ease;
+}
+
+.stationery-btn:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: #d1c7b7;
+  color: var(--ink-primary);
+}
+
+.stationery-btn:active {
+  transform: translateY(1px);
+}
+
+.stationery-btn.active {
+  background-color: var(--card-pressed);
+  border-color: #b5a691;
+  box-shadow: inset 0 1px 2px rgba(60, 45, 30, 0.15);
+  color: var(--ink-primary);
+}
+
+/* Visually quieter secondary action: Clear */
+.dock-separator {
+  width: 1px;
+  height: 14px;
+  background-color: var(--ink-border-subtle);
+  margin: 0 2px;
+}
+
+.clear-btn {
+  color: var(--ink-quiet);
+  width: 24px;
+  height: 24px;
+}
+
+.clear-btn:hover {
+  background-color: rgba(173, 51, 40, 0.08);
+  border-color: rgba(173, 51, 40, 0.3);
+  color: var(--retro-red);
+}
+
+.hidden {
+  display: none !important;
+}
